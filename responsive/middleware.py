@@ -17,7 +17,22 @@ _HTML_TYPES = ('text/html', 'application/xhtml+xml')
 
 
 class DeviceInfoMiddleware(object):
-    "Reads device info from the cookie and makes it available on the request."
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+        request = self.process_request(request)
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+        self.process_response(request, response)
+
+        return response
 
     def process_request(self, request):
         "Read cookie and populate device size info."
@@ -40,6 +55,7 @@ class DeviceInfoMiddleware(object):
         else:
             info['type'] = None
         request.device_info = info
+        return request
 
     def process_response(self, request, response):
         "Insert necessary javascript to set device info cookie."
